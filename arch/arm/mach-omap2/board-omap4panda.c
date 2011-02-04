@@ -718,6 +718,8 @@ void omap4_panda_display_init(void)
 	omap_display_init(&omap4_panda_dss_data);
 }
 
+extern void __init omap4_panda_android_init(void);
+
 static void __init omap4_panda_init(void)
 {
 	int package = OMAP_PACKAGE_CBS;
@@ -736,7 +738,10 @@ static void __init omap4_panda_init(void)
 	omap4_twl6030_hsmmc_init(mmc);
 	omap4_ehci_init();
 	usb_musb_init(&musb_board_data);
+
 	omap4_panda_display_init();
+
+	omap4_panda_android_init();
 }
 
 static void __init omap4_panda_map_io(void)
