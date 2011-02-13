@@ -424,6 +424,12 @@ static struct regulator_consumer_supply sdp4430_vcxio_supply[] = {
 	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi1"),
 };
 
+static struct regulator_consumer_supply sdp4430_cam2_supply[] = {
+	{
+		.supply = "cam2pwr",
+	},
+};
+
 static int omap4_twl6030_hsmmc_late_init(struct device *dev)
 {
 	int ret = 0;
@@ -506,6 +512,8 @@ static struct regulator_init_data sdp4430_vaux3 = {
 					| REGULATOR_CHANGE_MODE
 					| REGULATOR_CHANGE_STATUS,
 	},
+	.num_consumer_supplies = 1,
+	.consumer_supplies = sdp4430_cam2_supply,
 };
 
 /* VMMC1 for MMC1 card */
