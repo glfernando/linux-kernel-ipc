@@ -36,6 +36,7 @@
 #include <plat/usb.h>
 #include <plat/mmc.h>
 #include <plat/omap4-keypad.h>
+#include <plat/syntm12xx.h>
 #include <video/omapdss.h>
 #include <video/omap-panel-nokia-dsi.h>
 
@@ -49,6 +50,8 @@
 #define ETH_KS8851_QUART		138
 #define OMAP4_SFH7741_SENSOR_OUTPUT_GPIO	184
 #define OMAP4_SFH7741_ENABLE_GPIO		188
+#define OMAP4_TOUCH_IRQ_1		35
+#define OMAP4_TOUCH_IRQ_2		36
 #define HDMI_GPIO_HPD 60 /* Hot plug pin for HDMI */
 #define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
 #define LCD_BL_GPIO		27	/* LCD Backlight GPIO */
@@ -247,6 +250,49 @@ static struct platform_device sdp4430_leds_gpio = {
 		.platform_data = &sdp4430_led_data,
 	},
 };
+
+/* Begin Synaptic Touchscreen TM-01217 */
+
+static char *tm12xx_idev_names[] = {
+	"syn_tm12xx_ts_1",
+	"syn_tm12xx_ts_2",
+	"syn_tm12xx_ts_3",
+	"syn_tm12xx_ts_4",
+	"syn_tm12xx_ts_5",
+	"syn_tm12xx_ts_6",
+	NULL,
+};
+
+static u8 tm12xx_button_map[] = {
+	KEY_F1,
+	KEY_F2,
+};
+
+static struct tm12xx_ts_platform_data tm12xx_platform_data[] = {
+	{ /* Primary Controller */
+		.gpio_intr = OMAP4_TOUCH_IRQ_1,
+		.idev_name = tm12xx_idev_names,
+		.button_map = tm12xx_button_map,
+		.num_buttons = ARRAY_SIZE(tm12xx_button_map),
+		.repeat = 0,
+		.swap_xy = 1,
+		.controller_num = 0,
+		.suspend_state = SYNTM12XX_SLEEP_ON_SUSPEND,
+	},
+	{ /* Secondary Controller */
+		.gpio_intr = OMAP4_TOUCH_IRQ_2,
+		.idev_name = tm12xx_idev_names,
+		.button_map = tm12xx_button_map,
+		.num_buttons = ARRAY_SIZE(tm12xx_button_map),
+		.repeat = 0,
+		.swap_xy = 1,
+		.controller_num = 1,
+		.suspend_state = SYNTM12XX_SLEEP_ON_SUSPEND,
+	},
+};
+
+/* End Synaptic Touchscreen TM-01217 */
+
 static struct spi_board_info sdp4430_spi_board_info[] __initdata = {
 	{
 		.modalias               = "ks8851",
@@ -585,7 +631,19 @@ static struct i2c_board_info __initdata sdp4430_i2c_boardinfo[] = {
 		.platform_data = &sdp4430_twldata,
 	},
 };
+
+static struct i2c_board_info __initdata sdp4430_i2c_2_boardinfo[] = {
+	{
+		I2C_BOARD_INFO("tm12xx_ts_primary", 0x4b),
+		.platform_data = &tm12xx_platform_data[0],
+	},
+};
+
 static struct i2c_board_info __initdata sdp4430_i2c_3_boardinfo[] = {
+	{
+		I2C_BOARD_INFO("tm12xx_ts_secondary", 0x4b),
+		.platform_data = &tm12xx_platform_data[1],
+	},
 	{
 		I2C_BOARD_INFO("tmp105", 0x48),
 	},
@@ -606,7 +664,8 @@ static int __init omap4_i2c_init(void)
 	 */
 	omap_register_i2c_bus(1, 400, sdp4430_i2c_boardinfo,
 			ARRAY_SIZE(sdp4430_i2c_boardinfo));
-	omap_register_i2c_bus(2, 400, NULL, 0);
+	omap_register_i2c_bus(2, 400, sdp4430_i2c_2_boardinfo,
+				ARRAY_SIZE(sdp4430_i2c_2_boardinfo));
 	omap_register_i2c_bus(3, 400, sdp4430_i2c_3_boardinfo,
 				ARRAY_SIZE(sdp4430_i2c_3_boardinfo));
 	omap_register_i2c_bus(4, 400, sdp4430_i2c_4_boardinfo,
