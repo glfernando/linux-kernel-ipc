@@ -786,6 +786,8 @@ static inline void board_serial_init(void)
 }
  #endif
 
+extern void __init omap4_panda_android_init(void);
+
 static void __init omap_4430sdp_init(void)
 {
 	int status;
@@ -820,6 +822,7 @@ static void __init omap_4430sdp_init(void)
 		pr_err("Keypad initialization failed: %d\n", status);
 
 	omap_4430sdp_display_init();
+	omap4_panda_android_init();
 }
 
 static void __init omap_4430sdp_map_io(void)
