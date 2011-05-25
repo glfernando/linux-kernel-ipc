@@ -179,17 +179,44 @@ int omap4_prm_deassert_hardreset(void __iomem *rstctrl_reg, u8 shift)
 	return (c == MAX_MODULE_HARDRESET_WAIT) ? -EBUSY : 0;
 }
 
-void omap4_prm_global_warm_sw_reset(void)
+void omap4_prm_global_reset(const char *cmd)
 {
-	u32 v;
+	u32 v = 0;
 
-	v = omap4_prm_read_inst_reg(OMAP4430_PRM_DEVICE_INST,
-				    OMAP4_RM_RSTCTRL);
-	v |= OMAP4430_RST_GLOBAL_WARM_SW_MASK;
-	omap4_prm_write_inst_reg(v, OMAP4430_PRM_DEVICE_INST,
-				 OMAP4_RM_RSTCTRL);
+	if (cmd == NULL) {
+		/* cmd = NULL; case: cold boot */
+		v |= OMAP4430_RST_GLOBAL_COLD_SW_MASK;
+	} else {
+		/* cmd != null; case: warm boot */
+		/* Save reboot mode in scratch memory:
+		 * To be used by bootloader
+		 */
+		if (!strcmp(cmd, "bootloader")) {
+			printk(KERN_EMERG "reboot: into bootloader\n");
+			/* strcpy(PUBLIC_SAR_RAM_1_FREE, cmd); */
+			v |= OMAP4430_RST_GLOBAL_WARM_SW_MASK;
+
+		} else if (!strcmp(cmd, "recovery")) {
+			printk(KERN_EMERG "reboot: into recovery\n");
+			/* strcpy(PUBLIC_SAR_RAM_1_FREE, cmd); */
+			v |= OMAP4430_RST_GLOBAL_WARM_SW_MASK;
+		} else {
+			printk(KERN_EMERG "reboot: mode [%s]\n", cmd);
+			/* otherwise cold boot */
+			v |= OMAP4430_RST_GLOBAL_COLD_SW_MASK;
+		}
+	}
+	/* clear previous reboot status */
+	omap4_prm_write_inst_reg(0xfff,
+			OMAP4430_PRM_DEVICE_INST,
+			OMAP4_RM_RSTST);
+
+	omap4_prm_write_inst_reg(v,
+			OMAP4430_PRM_DEVICE_INST,
+			OMAP4_RM_RSTCTRL);
 
 	/* OCP barrier */
 	v = omap4_prm_read_inst_reg(OMAP4430_PRM_DEVICE_INST,
 				    OMAP4_RM_RSTCTRL);
+
 }
