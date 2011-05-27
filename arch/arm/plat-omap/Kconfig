@@ -39,9 +39,10 @@ config OMAP_DEBUG_LEDS
 config OMAP_RPMSG
 	tristate "OMAP Virtio-based remote processor messaging support"
 	depends on ARCH_OMAP4
+	default m
 	select VIRTIO
 	select VIRTIO_RING
-	select CONFIG_OMAP_MBOX_FWK
+	select OMAP_MBOX_FWK
 	help
 	  Say Y if you want to enable OMAP virtio-based remote-processor
 	  communication, currently only available with OMAP4. This is required
@@ -127,7 +128,7 @@ config OMAP_MCBSP
 	  Buffered Serial Port.
 
 config OMAP_MBOX_FWK
-	tristate "Mailbox framework support"
+	bool "Mailbox framework support"
 	depends on ARCH_OMAP
 	help
 	  Say Y here if you want to use OMAP Mailbox framework support for
@@ -221,7 +222,7 @@ config OMAP_SERIAL_WAKE
 config OMAP_CARVEOUT_MEMPOOL_SIZE
 	hex "Physical carveout memory pool size (Byte)"
 	depends on OMAP_REMOTE_PROC
-	default 0x3300000
+	default 0x700000
 	help
 	  Allocate specified size of memory at boot time so we can ioremap
 	  it safely.
